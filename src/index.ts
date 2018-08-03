@@ -11,10 +11,19 @@ import {
 import '../style/index.css';
 import '../style/papaya.css';
 
-/**
- * The default mime type for the extension.
- */
-const MIME_TYPE = 'application/nii';
+
+const TYPES: {
+  [key: string]: { name: string; extensions: string[] };
+} = {
+  'application/vnd.nifti.nifti': {
+    name: 'NIfTI',
+    extensions: ['.nii']
+  },
+  'application/vnd.niftigz.niftigz': {
+    name: 'NIfTI_GZ',
+    extensions: ['.nii.gz']
+  }
+};
 
 
 /**
@@ -91,34 +100,37 @@ class OutputWidget extends Widget implements IRenderMime.IRenderer {
 /**
  * A mime renderer factory for nii data.
  */
-export
-const rendererFactory: IRenderMime.IRendererFactory = {
-  safe: true,
-  mimeTypes: [MIME_TYPE],
+export const rendererFactory: IRenderMime.IRendererFactory = {
+  safe: false,
+  mimeTypes: Object.keys(TYPES),
   createRenderer: options => new OutputWidget(options)
 };
+
 
 /**
  * Extension definition.
  */
-const extension: IRenderMime.IExtension = {
-  id: 'niiext:plugin',
-  rendererFactory,
-  rank: 0,
-  dataType: 'string',
-  fileTypes: [{
-    name: 'nii',
-    mimeTypes: [MIME_TYPE],
-    fileFormat: 'base64',
-    extensions: ['.nii', '.nii.gz'],
-  }],
-  documentWidgetFactoryOptions: {
-    name: 'nii_viewer',
-    modelName: 'base64',
-    primaryFileType: 'nii',
-    fileTypes: ['nii', 'niigz'],
-    defaultFor: ['nii', 'niigz'],
-  }
-};
+ const extensions = Object.keys(TYPES).map(k => {
+   const { name } = TYPES[k];
+   return {
+     id: `jupyterlab-papaya:${name}`,
+     rendererFactory,
+     rank: 0,
+     dataType: 'string',
+     fileTypes: [
+       {
+         name,
+         extensions: TYPES[k].extensions,
+         mimeTypes: [k]
+       }
+     ],
+     documentWidgetFactoryOptions: {
+       name,
+       primaryFileType: name,
+       fileTypes: [name],
+       defaultFor: [name]
+     }
+   } as IRenderMime.IExtension;
+ });
 
-export default extension;
+export default extensions;
