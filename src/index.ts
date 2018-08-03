@@ -120,12 +120,14 @@ export const rendererFactory: IRenderMime.IRendererFactory = {
      fileTypes: [
        {
          name,
+         fileFormat: 'base64',
          extensions: TYPES[k].extensions,
          mimeTypes: [k]
        }
      ],
      documentWidgetFactoryOptions: {
-       name,
+       name: name,
+       modelName: 'base64',
        primaryFileType: name,
        fileTypes: [name],
        defaultFor: [name]
